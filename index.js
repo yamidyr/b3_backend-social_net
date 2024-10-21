@@ -35,8 +35,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurar rutas del aplicativo ( módulos )
 app.use('/api/user', UserRoutes);
-app.use('api/publication', PublicationRoutes);
-app.use('api/follow', FollowRoutes);
+app.use('/api/publication', PublicationRoutes);
+app.use('/api/follow', FollowRoutes);
 
 // Configurar el servidor de Node
 app.listen(puerto, () => {
