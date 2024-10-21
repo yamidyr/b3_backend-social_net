@@ -1,5 +1,6 @@
 import User from '../models/users.js';
 import bcrypt from 'bcrypt';
+import { createToken } from '../services/jwt.js';
 
 // Método de pureba del controlador user
 export const testUser = (req,res) => {
@@ -56,9 +57,9 @@ export const register = async (req, res) => {
         await user_to_save.save();
 
         // Devolver el usuario registrado
-        return res.status(200).json({
+        return res.status(201).json({
+            status: "created",
             message: "Registro de usuario exitoso",
-            params,
             user_to_save
         })
 
@@ -69,5 +70,71 @@ export const register = async (req, res) => {
             status: "error",
             message: "Error en el registro de usuario"
         })
+    }
+};
+
+// Método de Login ( usar JWT)
+export const login = async (req,res) => {
+    try {
+
+        // Obtener los parámetros del body (enviados en la petición)
+        let params = req.body;
+
+        // Validar que sí recibimos el email y el password
+        if ( !params.email || !params.password){
+            return res.status(400).send({
+                status: "error",
+                message: "Faltan datos por enviar"
+            });
+        }
+
+        // Buscar en la BD si existe el email registrado
+        const userBD = await User.findOne({
+            email: params.email.toLowerCase()
+        });
+
+        // Si no existe el usuario buscado
+        if(!userBD){
+            return res.status(404).send({
+                status: "error",
+                message: "Usuario no encontrado"
+            });
+        }
+
+        // Comprobar la contraseña
+        const validPassword = await bcrypt.compare(params.password, userBD.password);
+
+        // Si la contraseña es incorrecta (false)
+        if(!validPassword){
+            return res.status(401).send({
+                status: "error",
+                message: "Contraseña incorrecta"
+            })
+        }
+
+        // Generar el token de autenticación (JWT)
+        const token = createToken(userBD);
+
+
+        // Devolver respuesta de login exitoso
+        return res.status(200).json({
+            status: "success",
+            message: "Autenticación exitosa",
+            token,
+            userBD: {
+                id: userBD._id,
+                name: userBD.name,
+                last_name: userBD.last_name,
+                email: userBD.email,
+                nick: userBD.nick,
+                image: userBD.image
+            }
+        })
+    } catch (error) {
+        console.log("Error en la autenticación del usuario: ", error);
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la autenticación del usuario"
+    })
     }
 };
