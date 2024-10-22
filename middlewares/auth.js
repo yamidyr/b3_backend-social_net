@@ -38,7 +38,7 @@ export const ensureAuth = (req, res, next) => {
         return res.status(404).send({
             status: "error",
             message: "El token no es valido"
-        });       
+        });
     }
 
     // Paso a ejecución al siguiente método

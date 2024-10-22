@@ -139,7 +139,7 @@ export const login = async (req,res) => {
     }
 };
 
-// Método para mostrar el perfiil de un usuario
+// Método para mostrar el perfil de un usuario
 export const profile = async (req, res ) => {
     try {
         // Obtener el ID del usuario desde los parámetros de la URL
@@ -180,11 +180,11 @@ export const profile = async (req, res ) => {
     }
 }
 
-//Método para listar usuarios
+// Método para listar usuarios
 export const listUsers = async (req,res) => {
     try {
         // Gestionar la paginación
-        // 1. Controlar la página actual
+        // 1. Configurar la página actual
         let page = req.params.page ? parseInt(req.params.page, 10) : 1;
 
         // 2. Configurar los items por página a mostrar
@@ -220,6 +220,78 @@ export const listUsers = async (req,res) => {
         return res.status(500).send({
             status: "error",
             message: "Error al listar los usuarios"
+        })
+    }
+}
+
+// método para actualizar los datos del usuario
+export const updateUser = async (req, res ) => {
+    try {
+
+        // Obtener la información del usuario a actualizar
+        let userIdentity = req.user; // el usuario autenticado en el token, lo trae desde el middleware
+        let userToUpdate = req.body; // recoge los datos nuevos del usuario desde el formulario
+
+        // Eliminar campos que sobran porque no los vamos a actualizar
+        delete userToUpdate.iat;
+        delete userToUpdate.exp;
+        delete userToUpdate.role;
+
+        // Comprobamos si el usuario ya existe en la BD
+        const users = await User.find({
+            $or: [
+                { email: userToUpdate.email },
+                { nick: userToUpdate.nick}
+            ]
+        }).exec();
+
+        // Verificamos si el usuario está duplicado para evitar confilctos
+        const isDuplicatedUser = users.some(user => {
+            return user && user._id.toString()!== userIdentity.userId;
+        });
+
+        if(isDuplicatedUser){
+            return res.status(400).send({
+                status: "error",
+                message: "Error, solo se puede actualizar los datos del usuario logueado"
+            });
+        }
+
+        // Cifrar la contraseña en caso que la envíen en la petición
+        if(userToUpdate.password){
+            try {
+                let pwd = await bcrypt.hash(userToUpdate.password, 10);
+                userToUpdate.password = pwd;
+            } catch (hashError) {
+                return res.status(500).send({
+                    status: "error",
+                    message: "Error al cifrar la contraseña"
+                });
+            }
+        } else {
+            delete userToUpdate.password;
+        }
+
+        // Buscar y actualizar el usuario en Mongo
+        let userUpdated = await User.findByIdAndUpdate(userIdentity.userId, userToUpdate, { new: true} );
+        if( !userUpdated ){
+            return res.status(400).send({
+                status: "error",
+                message: "Error al actualizar el usuario"
+            })
+        }
+
+        // Devolvemos la respuesta exitosa
+        return res.status(200).json({
+            status: "success",
+            message: "Usuario actualizado correctamente",
+            user: userUpdated
+        })
+    } catch (error) {
+        console.log("Error al actualizar los datos del usuario");
+        return res.status(500).send({
+            status: "error",
+            message: "Error al actualizar los datos del usuario"
         })
     }
 }
