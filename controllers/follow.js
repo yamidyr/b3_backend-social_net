@@ -112,3 +112,40 @@ export const saveFollow = async (req, res) => {
         })
     }
 }
+
+// Método para eliminar un follow (dejar de seguir)
+export const unfollow = async (req, res) => {
+    try {
+      // Obtener el Id del usuario indentificado
+      const userId = req.user.userId;
+
+      // Obtener el Id del usuario que sigo y quiero dejar de seguir
+      const followedId = req.params.id;
+
+      // Búsqueda de las coincidencias de ambos usuarios y elimina
+      const followDeleted = await Follow.findOneAndDelete({
+        following_user: userId, // quien realiza el seguimiento
+        followed_user: followedId // a quien se quiere dejar de seguir
+      });
+
+      // Verificar si se encontró el documento y lo eliminó
+      if (!followDeleted) {
+        return res.status(404).send({
+          status: "error",
+          message: "No se encontró el seguimiento a eliminar."
+        });
+      }
+
+      // Devolver respuesta
+      return res.status(200).send({
+        status: "success",
+        message: "Dejaste de seguir al usuario correctamente."
+      });
+
+    } catch (error) {
+      return res.status(500).send({
+        status: "error",
+        message: "Error al dejar de seguir al usuario."
+      });
+    }
+  }
