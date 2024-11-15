@@ -389,7 +389,7 @@ export const counters = async (req, res) => {
       }
   
       // Obtener el nombre y apellido del usuario
-      const user = await User.findById(userId, { name: 1, last_name: 1});
+      const user = await User.findById(userId, { name: '1', last_name: '1'});
   
   
   
