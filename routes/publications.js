@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deletePublication, publicationsUser, savePublication, showPublication, testPublication, uploadMedia } from "../controllers/publication.js";
+import { deletePublication, feed, publicationsUser, savePublication, showMedia, showPublication, testPublication, uploadMedia } from "../controllers/publication.js";
 import { ensureAuth } from "../middlewares/auth.js";
 import multer from 'multer';
 import { CloudinaryStorage } from "multer-storage-cloudinary";
