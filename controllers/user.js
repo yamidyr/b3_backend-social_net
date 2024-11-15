@@ -213,7 +213,7 @@ export const listUsers = async (req,res) => {
             users: users.docs,
             totalDocs: users.totalDocs,
             totalPages: users.totalPages,
-            cancelIdleCallbackurrentPage: users.page
+            cancelIdleCallbackCurrentPage: users.page
         })
 
     } catch (error) {
