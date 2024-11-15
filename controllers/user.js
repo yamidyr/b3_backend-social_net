@@ -1,4 +1,5 @@
 import User from '../models/users.js';
+import Follow from '../models/follows.js';
 import bcrypt from 'bcrypt';
 import { createToken } from '../services/jwt.js';
 
